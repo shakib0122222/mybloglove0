@@ -1,1 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Multilingual Calendar</title>
+  <style>
+    body {
+      font-family: 'Roboto', Arial, sans-serif;
+      background: #ffffff;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .header {
+      text-align: center;
+      padding: 20px;
+      background: #1e3a8a;
+      color: white;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 1200px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 2em;
+    }
+    .current-month {
+      width: 100%;
+      max-width: 1200px;
+      margin-bottom: 30px;
+    }
+    .current-month-section {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      padding: 15px;
+    }
+    .current-month-section h2 {
+      margin: 0 0 10px;
+      color: #1e3a8a;
+      font-size: 1.5em;
+      text-align: center;
+    }
+    .calendar-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1200px;
+      width: 100%;
+    }
+    .calendar {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      transition: transform 0.3s;
+    }
+    .calendar:hover {
+      transform: translateY(-5px);
+    }
+    .calendar-header {
+      padding: 12px;
+      background: #2563eb;
+      color: white;
+      text-align: center;
+      font-size: 1.1em;
+      font-weight: 600;
+    }
+    .calendar-weekdays, .calendar-dates {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+    .calendar-weekdays div, .calendar-dates div {
+      text-align: center;
+      padding: 8px;
+      border: 1px solid #e5e7eb;
+      font-size: 0.9em;
+      box-sizing: border-box;
+    }
+    .calendar-weekdays {
+      background: #f3f4f6;
+      font-weight: 600;
+      color: #374151;
+    }
+    .calendar-dates div {
+      cursor: pointer;
+      transition: background 0.2s;
+      background: #f9fafb;
+    }
+    .calendar-dates div:hover {
+      background: #e0f2fe;
+    }
+    .current-date {
+      background: #1e40af !important;
+      color: white;
+      border-radius: 4px;
+    }
+    .holiday {
+      background: #fee2e2 !important;
+      color: #b91c1c;
+      font-weight: 500;
+    }
+    @media (max-width: 900px) {
+      .calendar-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 600px) {
+      .calendar-container {
+        grid-template-columns: 1fr;
+      }
+      .calendar {
+        max-width: 350px;
+      }
+      .header h1 {
+        font-size: 1.5em;
+      }
+      .current-month-section h2 {
+        font-size: 1.2em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Multilingual Calendar</h1>
+  </div>
+  <div class="current-month" id="current-month">
+    <div class="current-month-section" id="gregorian-section">
+      <h2>Gregorian - September 2025</h2>
+      <div class="calendar-weekdays">
+        <div>Sun</div>
+        <div>Mon</div>
+        <div>Tue</div>
+        <div>Wed</div>
+        <div>Thu</div>
+        <div>Fri</div>
+        <div>Sat</div>
+      </div>
+      <div class="calendar-dates" id="gregorian-dates"></div>
+    </div>
+    <div class="current-month-section" id="bengali-section">
+      <h2>বাংলা - ভাদ্র/আশ্বিন ১৪৩২</h2>
+      <div class="calendar-weekdays">
+        <div>রবি</div>
+        <div>সোম</div>
+        <div>মঙ্গল</div>
+        <div>বুধ</div>
+        <div>বৃহস্পতি</div>
+        <div>শুক্র</div>
+        <div>শনি</div>
+      </div>
+      <div class="calendar-dates" id="bengali-dates"></div>
+    </div>
+    <div class="current-month-section" id="hijri-section">
+      <h2>العربية - صفر ١٤٤٧</h2>
+      <div class="calendar-weekdays">
+        <div>الأحد</div>
+        <div>الإثنين</div>
+        <div>الثلاثاء</div>
+        <div>الأربعاء</div>
+        <div>الخميس</div>
+        <div>الجمعة</div>
+        <div>السبت</div>
+      </div>
+      <div class="calendar-dates" id="hijri-dates"></div>
+    </div>
+  </div>
+  <div class="calendar-container" id="calendar-container">
+    <!-- Calendars for 12 months will be populated here -->
+  </div>
 
+  <script type="module">
+    import Calendar from 'https://cdn.jsdelivr.net/npm/date-bengali-revised@1.0.0/index.js';
+    import { gregorianToHijri } from 'https://cdn.jsdelivr.net/npm/@tabby_ai/hijri-converter@1.0.5/dist/index.js';
+
+    const calendarContainer = document.getElementById('calendar-container');
+    const gregorianDates = document.getElementById('gregorian-dates');
+    const bengaliDates = document.getElementById('bengali-dates');
+    const hijriDates = document.getElementById('hijri-dates');
+    let currentYear = 2025;
+    let currentMonth = 8; // September (0-based index)
+
+    const englishMonths = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    const bengaliMonths = [
+      'বৈশাখ', 'জ্যৈষ্ঠ', 'আষাঢ়', 'শ্রাবণ', 'ভাদ্র', 'আশ্বিন',
+      'কার্তিক', 'অগ্রহায়ণ', 'পৌষ', 'মাঘ', 'ফাল্গুন', 'চৈত্র'
+    ];
+
+    const hijriMonths = [
+      'محرم', 'صفر', 'ربيع الأول', 'ربيع الثاني', 'جمادى الأولى', 'جمادى الآخرة',
+      'رجب', 'شعبان', 'رمضان', 'شوال', 'ذو القعدة', 'ذو الحجة'
+    ];
+
+    const holidays = new Set([
+      '01-01', '02-15', '02-21', '03-26', '03-28', '03-29', '03-30', '03-31',
+      '04-01', '04-02', '04-03', '04-14', '05-01', '05-11', '06-05', '06-06',
+      '06-07', '06-08', '06-09', '06-10', '07-06', '08-05', '08-16', '09-06',
+      '10-01', '10-02', '12-16', '12-25', '12-26'
+    ]);
+
+    function renderCurrentMonthCalendar(mode, container, month, year) {
+      container.innerHTML = '';
+
+      let displayMonth = month;
+      let displayYear = year;
+      let daysInMonth = new Date(year, month + 1, 0).getDate();
+      let firstDay = new Date(year, month, 1).getDay();
+
+      if (mode === 'bengali') {
+        const cal = new Calendar();
+        const bd = cal.fromGregorian(year, month + 1, 1);
+        displayMonth = bd.month - 1;
+        displayYear = bd.year;
+        daysInMonth = new Date(year, month + 1, 0).getDate(); // Approximate, as Bengali calendar varies
+      } else if (mode === 'hijri') {
+        const gd = { year, month: month + 1, day: 1 };
+        const hd = gregorianToHijri(gd);
+        displayMonth = hd.month - 1;
+        displayYear = hd.year;
+        daysInMonth = new Date(year, month + 1, 0).getDate(); // Approximate, as Hijri calendar varies
+      }
+
+      for (let i = 0; i < firstDay; i++) {
+        const blank = document.createElement('div');
+        container.appendChild(blank);
+      }
+
+      for (let i = 1; i <= daysInMonth; i++) {
+        const day = document.createElement('div');
+        let displayDay = i;
+
+        if (mode === 'bengali') {
+          const cal = new Calendar();
+          const bd = cal.fromGregorian(year, month + 1, i);
+          displayDay = bd.day;
+        } else if (mode === 'hijri') {
+          const gd = { year, month: month + 1, day: i };
+          const hd = gregorianToHijri(gd);
+          displayDay = hd.day;
+        }
+
+        day.textContent = displayDay;
+
+        if (mode === 'gregorian' &&
+            i === new Date().getDate() &&
+            year === new Date().getFullYear() &&
+            month === new Date().getMonth()) {
+          day.classList.add('current-date');
+        }
+
+        if (mode === 'gregorian') {
+          const dateStr = `${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+          if (holidays.has(dateStr)) {
+            day.classList.add('holiday');
+          }
+        }
+
+        container.appendChild(day);
+      }
+    }
+
+    function renderCalendar(month, year) {
+      const calendar = document.createElement('div');
+      calendar.classList.add('calendar');
+
+      const currentMonths = {
+        gregorian: englishMonths,
+        bengali: bengaliMonths,
+        hijri: hijriMonths
+      }['gregorian']; // Default to Gregorian for 12-month view
+
+      let displayMonth = month;
+      let displayYear = year;
+
+      const header = document.createElement('div');
+      header.classList.add('calendar-header');
+      header.textContent = `${currentMonths[displayMonth]} ${displayYear}`;
+      calendar.appendChild(header);
+
+      const weekdays = document.createElement('div');
+      weekdays.classList.add('calendar-weekdays');
+      ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(day => {
+        const div = document.createElement('div');
+        div.textContent = day;
+        weekdays.appendChild(div);
+      });
+      calendar.appendChild(weekdays);
+
+      const dates = document.createElement('div');
+      dates.classList.add('calendar-dates');
+
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      for (let i = 0; i < firstDay; i++) {
+        const blank = document.createElement('div');
+        dates.appendChild(blank);
+      }
+
+      for (let i = 1; i <= daysInMonth; i++) {
+        const day = document.createElement('div');
+        day.textContent = i;
+
+        if (i === new Date().getDate() &&
+            year === new Date().getFullYear() &&
+            month === new Date().getMonth()) {
+          day.classList.add('current-date');
+        }
+
+        const dateStr = `${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        if (holidays.has(dateStr)) {
+          day.classList.add('holiday');
+        }
+
+        dates.appendChild(day);
+      }
+      calendar.appendChild(dates);
+      return calendar;
+    }
+
+    function renderAllCalendars() {
+      calendarContainer.innerHTML = '';
+      for (let month = 0; month < 12; month++) {
+        calendarContainer.appendChild(renderCalendar(month, currentYear));
+      }
+    }
+
+    // Render current month in all three formats
+    renderCurrentMonthCalendar('gregorian', gregorianDates, currentMonth, currentYear);
+    renderCurrentMonthCalendar('bengali', bengaliDates, currentMonth, currentYear);
+    renderCurrentMonthCalendar('hijri', hijriDates, currentMonth, currentYear);
+
+    // Render all 12 months in Gregorian
+    renderAllCalendars();
+  </script>
+</body>
+</html>
